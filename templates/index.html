@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Modifier</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            margin: 10px 0;
+            border-radius: 0; /* Changed to have pointed corners */
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Code Modifier</h1>
+    <div>
+        <label for="instruction">Instructions:</label>
+        <textarea id="instruction" placeholder="Enter your instructions here..."></textarea>
+    </div>
+    <div>
+        <label for="code">Code:</label>
+        <textarea id="code" placeholder="Paste your code here..."></textarea>
+    </div>
+    <button onclick="modifyCode()">Modify Code</button>
+    <div>
+        <label for="result">Result:</label>
+        <textarea id="result" readonly></textarea>
+    </div>
+
+    <script>
+        async function modifyCode() {
+            const instruction = document.getElementById('instruction').value;
+            const code = document.getElementById('code').value;
+            const resultArea = document.getElementById('result');
+
+            try {
+                const response = await fetch('/modify-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        instruction: instruction,
+                        code_content: code
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    resultArea.value = `Error: ${data.error}`;
+                } else {
+                    resultArea.value = data.modified_code;
+                }
+            } catch (error) {
+                resultArea.value = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

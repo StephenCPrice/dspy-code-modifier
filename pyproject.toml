@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "dspy-code-modifier"
+version = "0.1.0"
+description = "A Flask application using DSPy for code modification"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flask = "^3.1.0"
+dspy-ai = "^2.3.8"
+python-dotenv = "^1.0.1"
+anthropic = "^0.18.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api" 
