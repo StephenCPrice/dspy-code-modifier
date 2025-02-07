@@ -13,7 +13,8 @@
             width: 100%;
             min-height: 200px;
             margin: 10px 0;
-            border-radius: 0; /* Changed to have pointed corners */
+            border-radius: 0;
+            font-family: monospace;
         }
         button {
             padding: 10px 20px;
@@ -24,6 +25,33 @@
         }
         button:hover {
             background-color: #0056b3;
+        }
+        .changes-list {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-left: 4px solid #007bff;
+        }
+        .diff {
+            font-family: monospace;
+            white-space: pre;
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+        .diff-added {
+            background-color: #e6ffe6;
+        }
+        .diff-removed {
+            background-color: #ffe6e6;
         }
     </style>
 </head>
@@ -38,8 +66,21 @@
         <textarea id="code" placeholder="Paste your code here..."></textarea>
     </div>
     <button onclick="modifyCode()">Modify Code</button>
+    
+    <div id="explanation" class="explanation" style="display: none;"></div>
+    
+    <div id="changes-list" class="changes-list" style="display: none;">
+        <h3>Changes Made:</h3>
+        <ul id="changes"></ul>
+    </div>
+    
     <div>
-        <label for="result">Result:</label>
+        <label for="diff">Diff:</label>
+        <pre id="diff" class="diff"></pre>
+    </div>
+    
+    <div>
+        <label for="result">Modified Code:</label>
         <textarea id="result" readonly></textarea>
     </div>
 
@@ -48,7 +89,10 @@
             const instruction = document.getElementById('instruction').value;
             const code = document.getElementById('code').value;
             const resultArea = document.getElementById('result');
-
+            const diffArea = document.getElementById('diff');
+            const explanationArea = document.getElementById('explanation');
+            const changesList = document.getElementById('changes');
+            
             try {
                 const response = await fetch('/modify-code', {
                     method: 'POST',
@@ -63,12 +107,43 @@
 
                 const data = await response.json();
                 if (data.error) {
-                    resultArea.value = `Error: ${data.error}`;
+                    let errorMessage = `Error: ${data.error}\n`;
+                    if (data.details) {
+                        errorMessage += `\nDetails: ${data.details}`;
+                    }
+                    if (data.traceback) {
+                        errorMessage += `\n\nTraceback:\n${data.traceback}`;
+                    }
+                    resultArea.value = errorMessage;
+                    explanationArea.style.display = 'none';
+                    document.getElementById('changes-list').style.display = 'none';
+                    diffArea.textContent = '';
                 } else {
+                    // Show the modified code
                     resultArea.value = data.modified_code;
+                    
+                    // Show the explanation
+                    explanationArea.textContent = data.explanation;
+                    explanationArea.style.display = 'block';
+                    
+                    // Show the changes
+                    changesList.innerHTML = '';
+                    data.changes.forEach(change => {
+                        const li = document.createElement('li');
+                        li.textContent = `Lines ${change.start_line}-${change.end_line}: Updated`;
+                        changesList.appendChild(li);
+                    });
+                    document.getElementById('changes-list').style.display = 'block';
+                    
+                    // Show the diff
+                    diffArea.textContent = data.diff;
                 }
             } catch (error) {
-                resultArea.value = `Error: ${error.message}`;
+                resultArea.value = `Error: ${error.message}\n\nPlease check the browser console for more details.`;
+                console.error('Full error:', error);
+                explanationArea.style.display = 'none';
+                document.getElementById('changes-list').style.display = 'none';
+                diffArea.textContent = '';
             }
         }
     </script>
